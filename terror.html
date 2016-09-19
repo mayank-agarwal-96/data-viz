@@ -1,0 +1,633 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>
+		Terrorism In India
+	</title>
+
+	<script src="http://d3js.org/d3.v3.min.js">
+
+	</script>
+	<script src="http://colorbrewer2.org/export/colorbrewer.js">
+
+	</script>
+	<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js">
+	</script>
+
+</head>
+<style type="text/css">
+	.d3-tip {
+	  line-height: 1;
+	  font-weight: bold;
+	  padding: 12px;
+	  background: rgba(0, 0, 0, 0.8);
+	  color: #ffffff;
+	  border-radius: 2px;
+	}
+	.area:hover {
+		fill: yellow;
+	}
+
+	body{
+		background-color : #003333;
+	}
+
+
+
+.xaxs path, .xaxs line{
+    fill: none;
+    stroke: white;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+
+}
+ .yaxs path ,.yaxs line
+{
+    fill: none;
+    stroke: white;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+	.d3-tip1 {
+	  line-height: 1;
+	  font-weight: bold;
+	  padding: 12px;
+	  background: rgba(0, 0, 0, 0.8);
+	  color: #ffffff;
+	  border-radius: 2px;
+	}
+.xa path, .xa line{
+    fill: none;
+    stroke: white;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+
+}
+ .ya path ,.ya line
+{
+    fill: none;
+    stroke: white;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.rec:hover{
+		fill : black;
+	}
+
+
+
+
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #003333;
+}
+
+.d3-tip2 {
+	  line-height: 1;
+	  font-weight: bold;
+	  padding: 12px;
+	  background: rgba(0, 0, 0, 0.8);
+	  color: #ffffff;
+	  border-radius: 2px;
+	}
+
+</style>
+<body>
+	<div id = "map" style = "float : left"> 
+		<center><h1 style = "color : #FFFFFF">Terrorist Attacks On India</h1></center>
+		<center><h2 style = "color : #FFFFFF">Between 2006-15 </h1></center>
+	</div>
+	<div id = "txt" style = "float : right" > 
+		<center><h1 style = "color : #FFFFFF">Top 5 attacks</h1></center>
+		<ul style = "color : #FFFFFF">
+		<li>2006 Mumbai train bombings : 209 killed</li>
+		<li>2008 Mumbai attacks : 171 killed</li>
+		<li>2008 Assam bombings : 77 killed</li>
+		<li>2007 Samjhauta Express bombings : 68 killed</li>
+		<li>2008 Jaipur bombings : 63 killed</li>
+		</ul>
+	</div>
+
+	<div id = "line">
+		<center><h1 style = "color : #FFFFFF">Attack On Railways</h1></center>
+	</div>
+
+	<div id = "stacked" style = "float : left">
+		<br>
+		<br>
+		<center><h1 style = "color : #FFFFFF">Indian Defence Budget</h1></center>
+	 </div>
+
+	<div id = "pie">
+		<br>
+		<br>
+		<center><h1 style = "color : #FFFFFF">Army Capital Acquisition Budget</h1></center>
+		<center><h3 style = "color : #FFFFFF">(Hover over the donut)</h3></center>
+	</div>
+
+    <div id = "data">
+        <h3 style = "color : #FFFFFF"> Data Sources:<h3>
+        <a href = "https://en.wikipedia.org/wiki/List_of_terrorist_incidents_in_India"  style = "color : #FFFFFF">Source 1</a>
+    </div>
+	<script>		
+	
+		var canvas= d3.select("#map").append("svg")
+				    .attr('viewBox','0 0 700 600' )
+    .attr('preserveAspectRatio','xMinYMin');
+		//canvas.call(tip);
+		var color= d3.scale.ordinal()
+			.domain([1,2,3,4,5,6,7,8,9])
+			.range(colorbrewer.Reds[9]);
+		var color1= d3.scale.ordinal()
+			.domain([1,2,3,4,5,6,7,8,9])
+			.range(colorbrewer.Greens[9]);
+
+		
+		d3.json("attack.geojson", function(data){
+			var tip = d3.tip()
+				.attr('class', 'd3-tip')
+				.offset([-10, 0])
+				.html(function(d) {
+				return "Number of Attacks in "+d.properties.NAME_1+ " : " + d.properties.attacks;    
+
+				});
+			
+			canvas.call(tip);
+			var group=canvas.selectAll("g")
+				.data(data.features)
+				.enter()
+				.append("g")
+				.on('mouseover', tip.show)
+      			.on('mouseout', tip.hide)
+				var projection = d3.geo.mercator().scale(1000).translate([-1000,700]);
+				var path= d3.geo.path().projection(projection);
+				
+				
+				
+				var areas= group.append("path")
+					.attr("d", path)
+					.attr("class", "area")
+					.attr("fill", function(d){
+						if(d.properties.attacks >= 5 )
+						{
+							return color(9);
+						}
+						else
+							if(d.properties.attacks >= 4)
+						{
+							return color(7);
+						}
+						else
+							if(d.properties.attacks >= 3)
+						{
+							return color(6);
+						}
+						else
+							if(d.properties.attacks >= 2)
+						{
+							return color(4);
+						}
+						else
+							if(d.properties.attacks >= 1)
+						{
+							return color(3);
+						}
+						else
+						{
+							return color(2);
+						}
+					});
+
+        	//var color_domain = [50, 150, 350, 750, 1500]
+  	var ext_color_domain = [2,3,4,6,7,9];
+  	var legend_labels = ["0 attack", "1 attack","2 attacks","3 attacks","4 attacks","5 attacks" ];
+
+	var legend = canvas.selectAll("g.legend")
+  		.data(ext_color_domain)
+  		.enter().append("g")
+  		.attr("class", "legend");
+
+ 	var ls_w = 20, ls_h = 20;
+	
+  	legend.append("rect")
+  		.attr("x", 20)
+  		.attr("y", function(d, i){ return 500 - (i*ls_h) - 2*ls_h;})
+ 		.attr("width", ls_w)
+  		.attr("height", ls_h)
+  		.style("fill", function(d, i) { return color(d); })
+  		.style("opacity", 0.8);
+
+  	legend.append("text")
+  		.attr("x", 50)
+  		.attr("y", function(d, i){ return 500 - (i*ls_h) - ls_h - 4;})
+  		.text(function(d, i){ return legend_labels[i]; })
+		.style("fill","white");
+
+
+					
+
+			});
+		
+	</script>
+
+
+	<script>
+	var w = 600;
+	var h = 300;
+
+	var dataset = [ 209, 171, 77, 68, 63];
+	
+//Create SVG element
+	var svg = d3.select("#txt")
+		  .append("svg")	
+		  .attr("width", w)
+ 		  .attr("height", h);
+ 
+	svg.selectAll("circle")
+  	.data(dataset)
+  	.enter()
+  	.append("circle")
+  	.transition()
+  	.delay(function(d,i){return i * 2000})
+  	.attr('class','circ')
+  	.attr("cx", function(d,i) {
+  	  return d*2;
+  	})
+	  .attr("cy", function(d,i) {
+	    return (i+1)*50;
+	  })
+	  .attr("r", function(d) {
+	    return (d/5);
+	  })
+	  .attr("fill", function(d,i){
+			if(i == 0)
+				return "#660000"
+			else if(i == 1)
+				return "#990000"
+			else if(i == 2)
+				return "#CC0000"
+			else if(i == 3)
+				return "#FF0000"
+			else if(i == 4)
+				return "#FF3300"
+
+		});
+
+	svg.selectAll("text")
+	  .data(dataset)
+	  .enter()
+	  .append("text")
+	  .transition()
+	  .delay(function(d,i){return i*2000;})
+	  .text(function(d,i) {
+		if(i == 0)
+			return "Mumbai" +','+ d;
+		else if(i == 1)
+			return "Mumbai" +','+ d;
+		else if(i == 2)
+			return "Assam" +','+ d;
+		else if(i == 3)
+			return "Haryana" +','+ d;
+		else if(i == 4)
+			return "Jaipur" +','+ d;
+
+	  })
+	  .attr("x", function(d) {
+	    return d*2-10;
+	  })
+	  .attr("y", function(d,i) {
+	    return (i+1)*50+ 10;
+		  })
+	  .attr("font-size", "15px")
+	  .attr("fill", "white"); 
+</script>
+
+
+
+
+<script>
+// LINE CHART HERE
+
+	var margin3 = {top: 30, right: 20, bottom: 30, left: 80},
+    		width3 = 500 - margin3.left - margin3.right,
+    		height3 = 300 - margin3.top - margin3.bottom;
+
+	var data3 = [
+	{"date": 0,"attack":13},
+	{"date":1,"attack":16},
+	{"date":2,"attack":4},
+	{"date":3,"attack":24},
+	{"date":4,"attack":36},
+	{"date":5,"attack":48},
+	{"date":6,"attack":7},
+	{"date":7,"attack":9},
+	{"date":8,"attack":6},
+	{"date":9,"attack":4}
+]
+
+// Set the ranges
+	var x3 = d3.scale.linear().domain([0,9]).range([width3,0]);
+	var y3 = d3.scale.linear().range([height3, 0]);
+
+// Define the axes
+	var xAxis3 = d3.svg.axis().scale(x3)
+    		.orient("bottom").ticks(10)
+		.tickFormat(function(d,i){
+					if(i == 9)
+						return "2005"
+					else if(i == 8)
+						return "2006";
+					else if(i == 7)
+						return "2007";
+					else if(i == 6)
+						return "2008";
+					else if(i == 5)
+						return "2009";
+					else if(i == 4)
+						return "2010";
+					else if(i == 3)
+						return "2011";
+					else if(i == 2)
+						return "2012";
+					else if(i == 1)
+						return "2013";
+					else if(i == 0)
+						return "2014";
+					
+					});
+
+	var yAxis3 = d3.svg.axis().scale(y3)
+    		.orient("left").ticks(10);
+
+	var valueline = d3.svg.line()
+    		.x(function(d) { return x3(d.date); })
+    		.y(function(d) { return y3(d.attack); });
+    
+	var svg3 = d3.select("#line")
+    	.append("svg")
+        	.attr("width", width3 + margin3.left + margin3.right)
+        	.attr("height", height3 + margin3.top + margin3.bottom)
+    	.append("g")
+        	.attr("transform", "translate(" + margin3.left + "," + margin3.top + ")");
+
+    y3.domain([0, 50]);
+
+    
+    svg3.append("path")
+        .attr("class", "line")
+        .attr("d", valueline(data3))
+	.attr("stroke","#9966FF")
+	.attr("stroke-width",2)
+	.attr("fill","none");
+   
+    svg3.append("g")
+        .attr("class", "xaxs")
+        .attr("transform", "translate(0," + height3 + ")")
+	.style("fill","white")
+        .call(xAxis3);
+	
+
+   
+    svg3.append("g")
+        .attr("class", "yaxs")
+	.style("fill","white")
+        .call(yAxis3)
+        .append("text")
+      		.attr("transform", "rotate(-90)")
+      		.attr("y", 6)
+      		.attr("dy", ".71em")
+      		.style("text-anchor", "end")
+      		.text("Number of Attacks");
+</script>
+
+
+
+		<script type="text/javascript">
+
+			//Width and height
+			var w = 700;
+			var h = 400;
+
+
+			//Original data
+			var dataset = [
+        [
+                { x: 0, y: 50 },
+                { x: 1, y: 52 },
+                { x: 2, y: 52 },
+                { x: 3, y: 53 }
+        ],
+        [
+                { x: 0, y: 18 },
+                { x: 1, y: 13 },
+                { x: 2, y: 14 },
+                { x: 3, y: 16 }
+        ],
+        [
+                { x: 0, y: 23 },
+                { x: 1, y: 24 },
+                { x: 2, y: 23 },
+                { x: 3, y: 23 }
+        ],
+        [
+                { x: 0, y: 6 },
+                { x: 1, y: 6 },
+                { x: 2, y: 6 },
+                { x: 3, y: 6 }
+        ],
+	[
+                { x: 0, y: 1 },
+                { x: 1, y: 1 },
+                { x: 2, y: 1 },
+                { x: 3, y: 1 }
+        ],
+	[
+                { x: 0, y: 2 },
+                { x: 1, y: 4 },
+                { x: 2, y: 4 },
+                { x: 3, y: 1 }
+        ]
+];
+
+			//Set up stack method
+			var stack = d3.layout.stack();
+
+			//Data, stacked
+			stack(dataset);
+
+			//Set up scales
+			var xScale = d3.scale.ordinal()
+				.domain(d3.range(dataset[0].length))
+				.rangeRoundBands([0,500],0.5);
+		
+			var yScale = d3.scale.linear()
+				.domain([0,				
+					d3.max(dataset, function(d) {
+						return d3.max(d, function(d) {
+							return d.y0 + d.y;
+						});
+					})
+				])
+				.range([0, 300]);
+		var xaxis = d3.svg.axis()
+			.scale(xScale)
+			.orient("bottom")
+			.ticks(4)
+			.tickFormat(function(d,i){
+					if(i == 0)
+						return "2012-13"
+					else if(i == 1)
+						return "2013-14";
+					else if(i == 2)
+						return "2014-15";
+					else if(i == 3)
+						return "2015-16";
+					});
+		var x = d3.scale.linear()
+			.domain([0,100])
+			.range([300,0]);
+		var yaxis = d3.svg.axis()
+			.scale(x)
+			.orient("left");	
+			//Easy colors accessible via a 10-step ordinal scale
+			var colors = d3.scale.category10();
+		
+			//Create SVG element
+			var svg = d3.select("#stacked")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			var tip1 = d3.tip()
+				.attr('class', 'd3-tip1')
+				.offset([-10, 0])
+				.html(function(d,i,j) {
+					if(j==0)
+					return "Army : " +  d.y;
+					else if(j == 1) 
+					return "Navy : " + d.y;
+					else if(j == 2) 
+					return "Air Force : " + d.y;
+					else if(j == 3) 
+					return "R&D : " + d.y;
+					else if(j == 4) 
+					return "OFB : " + d.y;
+					else if(j == 5) 
+					return "Misc : " + d.y;   
+				});
+			svg.call(tip1);
+			// Add a group for each row of data
+			var groups = svg.selectAll("g")
+				.data(dataset)
+				.enter()
+				.append("g")
+				.style("fill", function(d, i){		
+						return colors(i);
+				});
+	
+			// Add a rect for each data value
+			var rects = groups.selectAll("rect")
+				.data(function(d) { return d; })
+				.enter()
+				.append("rect")
+				.attr('class','rec')
+				.attr("x", function(d, i) {
+					return xScale(i);
+				})
+				.attr("y", function(d) {
+					return yScale(d.y0);
+				})
+				.attr("height", function(d) {
+					return yScale(d.y);
+				})
+				.attr("width", xScale.rangeBand())
+				.attr("transform","translate(80,70)")
+				.on('mouseover',tip1.show)
+				.on('mouseout',tip1.hide);
+			var xax = svg.append("g")
+					.attr("class","xa")
+					.attr("transform","translate(80,370)")
+					.style("fill","white")
+					.call(xaxis);
+
+			var yax = svg.append("g")
+					.attr("class","ya")
+					.attr("transform","translate(80,70)")
+					.style("fill","white")
+					.call(yaxis); 
+		</script>
+
+
+
+
+	<script>
+
+var width = 600,
+    height = 350,
+    radius = 180;
+
+var colo = d3.scale.ordinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+var arc = d3.svg.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(110);
+
+var labelArc = d3.svg.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.population; });
+
+var sv = d3.select("#pie").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+
+	var tip2 = d3.tip()
+			.attr('class', 'd3-tip2')
+			.offset([-10, 0])
+			.html(function(d){return d.data.age + " : "+ d.data.population + " crores";})
+	sv.call(tip2);
+var datas = [
+	{"age":"Land","population": 377.0},
+	{"age":"Construction","population":4363.92},
+	{"age":"Aircraft & Aero Engine","population":2365.35},
+	{"age":"Heavy and Medium Vehicle","population":1783.11},
+	{"age":"Others","population":17335.22}
+];
+
+  var g = sv.selectAll(".arc")
+      .data(pie(datas))
+    .enter().append("g")
+      .attr("class", "arc")
+	.on('mouseover',tip2.show)
+	.on('mouseout',tip2.hide);
+
+  g.append("path")
+      .attr("d", arc)
+      .style("fill", function(d) { return colo(d.data.age); });
+
+ /* g.append("text")
+      .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+      .attr("dy", ".35em")
+      .text(function(d) { return d.data.age ; });*/
+
+function type(d) {
+  d.population = +d.population;
+  return d;
+}
+</script>
+</body>
+	
+</html>

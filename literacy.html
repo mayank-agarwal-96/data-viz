@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+<head>
+	<title>
+		Literacy Rate
+	</title>
+
+	<script src="http://d3js.org/d3.v3.min.js">
+
+	</script>
+	<script src="http://colorbrewer2.org/export/colorbrewer.js">
+
+	</script>
+	<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js">
+	</script>
+
+</head>
+<style type="text/css">
+	.d3-tip {
+	  line-height: 1;
+	  font-weight: bold;
+	  padding: 12px;
+	  background: rgba(0, 0, 0, 0.8);
+	  color: #ffffff;
+	  border-radius: 2px;
+	}
+	.area:hover {
+		fill: yellow;
+	}
+
+</style>
+	<body>
+		
+  			<div width = "50%" height = "600px"style="float:left" id = "map">
+				<center><h1 style = "color : teal">Choropleth Map</h1></center>
+  			</div >
+  			<div width = "50%" height = "300px"style="float:right" id = "graph">
+				<center><h2 style = "color : #333366">Literacy Rate</h2></center>
+				<center><h2 style = "color : #333366">Male v/s Female</h2></center>
+  			</div>
+			<div width = "50%" height = "300px"style="float:right" id = "pie">
+				<center><h2 style = "color : #333366">Population</h2></center>
+				<center><h2 style = "color : #333366">Male v/s Female</h2></center>
+  			</div>
+			<div width = "600px" height = "500px" style = "float:right" id = "work">
+				 <center><h2 style = "color : #333366">Work Population</h2></center>
+			</div>
+ 		
+		<script>
+			var canvas= d3.select("#map").append("svg")  //SVG FOR MAP
+				.attr("width", 700)
+				.attr("height",600);
+			
+			var widthscale = d3.scale.linear()
+							.domain([0,100])
+							.range([0,400]);
+			var axis = d3.svg.axis()
+						.scale(widthscale);
+			var x = d3.scale.linear()
+						.domain([0,3])
+						.range([150,0]);
+			var vaxis = d3.svg.axis()
+						.scale(x)
+						.orient("left")
+						.ticks(5)
+						.tickFormat(function(d,i){
+									if(i == 1)
+										return "Female";
+									else if(i == 3)
+										return "Male";
+							});
+			var canvas1= d3.select("#graph").append("svg")  //contains bar chart
+				.attr("width", 500)
+				.attr("height", 200)
+				.append("g")
+				.attr("transform","translate(70,50)")
+			var canvas2 = d3.select("#pie").append("svg")  // PIE CHART SVG
+			.attr("width",500)
+			.attr("height",300);
+
+			var canvas3 = d3.select("#work").append("svg")  // Vertical CHART SVG
+			.attr("width",600)
+			.attr("height",500);
+
+			var color= d3.scale.ordinal()
+			.domain([1,2,3,4,5,6,7,8,9])
+			.range(colorbrewer.Greens[9]);
+
+		
+		d3.json("new.geojson", function(data){
+			var tip = d3.tip()
+				.attr('class', 'd3-tip')
+				.offset([-10, 0])
+				.html(function(d) {
+				return d.properties.ENGTYPE_1+":"+d.properties.NAME_1 +"<br>" +"Literacy Rate: "+d.properties.lr+"%"+"<br>"+"Population: "+d.properties.population + "<br>"+"Work Population: "+d.properties.WP;    
+
+				});
+			canvas.call(tip);
+/*bar chart for literacy rate begin*/
+			var da = [82.14,65.46];
+			var bars = canvas1.selectAll("rect")
+						.data(da)
+						.enter()
+							.append("rect")
+							.attr("width",function(d){return widthscale(d);})
+							.attr("height",function(d){return 40;})
+							.attr("y",function(d,i){return i*50})
+							.attr("fill","steelblue");
+				canvas1.selectAll("text")
+					.data(da)
+					.enter()
+					.append("text")
+					.text(function(d){return d;})
+					.attr("y",function(d,i){
+								if(i == 0)
+									return 30;
+								else
+									return 80;
+						})
+					.attr("fill","white");	
+			var xax = canvas1.append("g")
+					 .attr("transform","translate(0,100)")
+					 .call(axis);
+			var yax = canvas1.append("g")
+					 .attr("transform","translate(0,-50)")
+					 .call(vaxis);
+
+
+// PIE CHART FOR WORK POPULATION
+
+		var work = [273209976,89355595];
+		var r1 = 90;
+		var group = canvas3.append("g")
+			.attr("transform","translate(240,100)");
+
+		var arc1 = d3.svg.arc()
+			.innerRadius(0) 
+			.outerRadius(r1);
+			
+
+		var pie1 = d3.layout.pie()
+			.value(function (d) { return d; });
+			
+		var arcs1 = group.selectAll(".arc1")
+			.data(pie1(work))
+			.enter()
+			.append("g")
+			.attr("class", "arc1");
+			
+		arcs1.append("path")
+		 	.attr("d", arc1)
+		 	.attr("fill", function(d,i){
+				if(i == 0)
+					return "#B00000";
+				else
+					return "#3399FF";
+			});
+		
+		arcs1.append("text")
+			.attr("transform",function(d){return "tanslate("+arc1.centroid(d)+")";})
+			.attr("font-size","1.2em")
+			.attr("text-anchor", function(d) {
+    			return (d.endAngle + d.startAngle)/2 > Math.PI ?
+        		"end" : "start";
+			})
+			.attr("fill","white")
+			.text(function(d,i){
+						if(i == 0)
+							return "Male";
+						else
+					return "Female";
+		});
+//UPDATE PIE CHART FOR WORK
+function workupdate(pid){
+
+		var r1 = 90;
+		//var colorpie = d3.scale.ordinal()
+			//	.range(["red","blue"]);
+
+		var group = canvas3.append("g")
+			.attr("transform","translate(240,100)");
+
+	
+		var arc = d3.svg.arc()
+			.innerRadius(0) 
+			.outerRadius(r);
+			
+
+		var pie = d3.layout.pie()
+			.value(function (d) { return d; });
+		
+		function tweenPie(finish){
+			var start = {
+				startAngle:0,
+				endAngle:0
+			};
+			var i = d3.interpolate(start,finish);
+
+			return function(d){return arc(i(d));};
+		}			
+		var arcs = group.selectAll(".arc")
+			.data(pie(pid))
+			.enter()
+			.append("g")
+			.attr("class", "arc");
+			
+		arcs.append("path")
+		 	.attr("d", arc)
+		 	.attr("fill", function(d,i){
+				if(i == 0)
+					return "#B00000";
+				else
+					return "#3399FF";
+			})
+			.transition()
+			.duration(300)
+			.attrTween('d',tweenPie);
+		
+			arcs.append("text")
+			.attr("transform",function(d){return "tanslate("+arc.centroid(d)+")";})
+			.attr("font-size","1.2em")
+			.attr("text-anchor", function(d) {
+    			return (d.endAngle + d.startAngle)/2 > Math.PI ?
+        		"end" : "start";
+			})
+			.attr("fill","white")
+			.text(function(d,i){
+						if(i == 0)
+							return "Male";
+						else
+							return "Female";
+				});
+		}
+/*pie for work ends and pie for population begins*/ 
+		var r = 90;
+		var popdata = [623724248,586469174];
+		/*var colorpie = d3.scale.ordinal()
+			.range(["red","blue"]);*/
+
+		var group = canvas2.append("g")
+			.attr("transform","translate(240,100)");
+
+	
+		var arc = d3.svg.arc()
+			.innerRadius(0) 
+			.outerRadius(r);
+			
+
+		var pie = d3.layout.pie()
+			.value(function (d) { return d; });
+			
+		var arcs = group.selectAll(".arc")
+			.data(pie(popdata))
+			.enter()
+			.append("g")
+			.attr("class", "arc");
+			
+		arcs.append("path")
+		 	.attr("d", arc)
+		 	.attr("fill", function(d,i){
+				if(i == 0)
+					return "#B00000";
+				else
+					return "#3399FF";
+			});
+			
+		arcs.append("text")
+			.attr("transform",function(d){return "tanslate("+arc.centroid(d)+")";})
+			.attr("font-size","1.2em")
+			.attr("text-anchor", function(d) {
+    			return (d.endAngle + d.startAngle)/2 > Math.PI ?
+        		"end" : "start";
+			})
+			.attr("fill","white")
+			.text(function(d,i){
+						if(i == 0)
+							return "Male";
+						else
+							return "Female";
+				});
+//pie update function
+		function pieupdate(pidata){
+
+		var r = 90;
+		//var colorpie = d3.scale.ordinal()
+			//	.range(["red","blue"]);
+
+		var group = canvas2.append("g")
+			.attr("transform","translate(240,100)");
+
+	
+		var arc = d3.svg.arc()
+			.innerRadius(0) 
+			.outerRadius(r);
+			
+
+		var pie = d3.layout.pie()
+			.value(function (d) { return d; });
+		
+		function tweenPie(finish){
+			var start = {
+				startAngle:0,
+				endAngle:0
+			};
+			var i = d3.interpolate(start,finish);
+
+			return function(d){return arc(i(d));};
+		}			
+		var arcs = group.selectAll(".arc")
+			.data(pie(pidata))
+			.enter()
+			.append("g")
+			.attr("class", "arc");
+			
+		arcs.append("path")
+		 	.attr("d", arc)
+		 	.attr("fill", function(d,i){
+				if(i == 0)
+					return "#B00000";
+				else
+					return "#3399FF";
+			})
+			.transition()
+			.duration(300)
+			.attrTween('d',tweenPie);
+		
+			arcs.append("text")
+			.attr("transform",function(d){return "tanslate("+arc.centroid(d)+")";})
+			.attr("font-size","1.2em")
+			.attr("text-anchor", function(d) {
+    			return (d.endAngle + d.startAngle)/2 > Math.PI ?
+        		"end" : "start";
+			})
+			.attr("fill","white")
+			.text(function(d,i){
+						if(i == 0)
+							return "Male";
+						else
+							return "Female";
+				});
+		}
+/*pie ends and redraw func for bar chart begins */
+			function redraw(dat)
+			{
+				//window.alert(dat);
+
+					canvas1.selectAll("rect")
+						.data(dat)
+						.transition()
+						.duration(300)
+							.attr("width",function(d){return widthscale(d);})
+							.attr("height",40)
+							.attr("y",function(d,i){return i*50})
+							.attr("fill",function(d,i){
+									if(i == 0 && d > 82.14)
+										return "green";
+									if(i == 0 && d < 82.14)
+										return "red";
+									if(i == 1 && d > 65.46)
+										return "green";
+									if(i == 1 && d < 65.46)
+										return "red";
+									if((i == 0 && d == 82.14) || (i == 1 && d == 65.46))
+										return "steelblue";
+									
+								});
+
+					canvas1.selectAll("text")
+					.data(dat)
+					.transition()
+					.duration(300)
+					.text(function(d){return d;})
+					.attr("y",function(d,i){
+								if(i == 0)
+									return 30;
+								else
+									return 80;
+						});	
+			}
+
+
+			function onhover(d){
+				tip.show(d)
+				var ar = [d.properties.mlr,d.properties.flr];
+				var po = [d.properties.mlp,d.properties.fmp];
+				var mwp = d.properties.MWP;
+				var fwp = d.properties.FWP;
+				var wp = [mwp,fwp];
+			//	window.alert(ar);
+				redraw(ar);
+				pieupdate(po);
+				workupdate(wp);
+			}
+			function onout(d){
+			tip.hide(d);
+			var arr = [82.14,65.46];
+			var po = [623724248,586469174];
+			//window.alert(arr);
+			redraw(arr);
+			pieupdate(po);
+			workupdate([273209976,89355595]);	
+			}
+// MAP DRAW STARTS
+			var group=canvas.selectAll("g")
+				.data(data.features)
+				.enter()
+				.append("g")
+				.on('mouseover', onhover)
+      			.on('mouseout', onout)
+				var projection = d3.geo.mercator().scale(900).translate([-950,650]);
+				var path= d3.geo.path().projection(projection);
+				
+				
+				
+				var areas= group.append("path")
+					.attr("d", path)
+					.attr("class", "area")
+					.attr("fill", function(d){
+						if(d.properties.lr >= 90 )
+						{
+							return color(9);
+						}
+						else
+							if(d.properties.lr >= 85)
+						{
+							return color(7);						}
+						else
+							if(d.properties.lr >= 80)
+						{
+							return color(6);
+						}
+						else
+							if(d.properties.lr >= 70 )
+						{
+							return color(5);
+						}
+						else
+							if(d.properties.lr >= 67)
+						{
+							return color(4);
+						}
+						else
+							if(d.properties.lr >= 60)
+						{
+							return color(3);
+						}
+						else
+						{
+							return color(1);
+						}
+					});
+
+					
+
+			});
+		</script>
+	</body>
+</html>
